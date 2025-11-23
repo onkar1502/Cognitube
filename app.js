@@ -21,7 +21,7 @@ module.exports = { io, app }
 
 // Socket.io connection handler
 io.on('connection', (socket) => {
-  console.info('A client connected')
+  console.info('A client connected');
 })
 
 // Import application routes
