@@ -83,8 +83,8 @@ app.use((req, res) => {
 })
 
 // Set the port for the server
-const port = 3000
+const port = process.env.PORT || 3000
 // Start the server and listen on the specified port
 server.listen(port, () => {
-  console.info(`Server started at http://localhost:${port}`)
+  console.info(`Server started on port ${port}`)
 })
