@@ -26,19 +26,10 @@ const createChannel = async (req, res) => {
       if (response.url) channel.logoURL = response.url
     }
 
-    // Create a collection for the channel using BunnyCDN
-    const collectionResponse = await axios.post(
-      `https://video.bunnycdn.com/library/${process.env.BUNNY_LIBRARY_ID}/collections`,
-      { name: uid },
-      { headers: { AccessKey: process.env.BUNNY_API_KEY } }
-    )
-    const { guid: collectionId } = collectionResponse.data
-
     // Update channel details
     Object.assign(channel, {
       handle: req.body.handle,
       name: req.body.name,
-      collectionId,
       uid
     })
 
@@ -135,13 +126,20 @@ const getSubscription = async ({ subscriber, channel }) => {
 // Fetch channel and subscription information
 const getChannelAndSubscription = async (req, res, isHandle = true) => {
   try {
+    const Video = require("@models/Video")
     const currentChannel = isHandle ? await getChannelByHandle(req.params[0]) : await getChannelByUid(req.params[0])
 
     if (!currentChannel) res.redirect("/404")
 
+    const totalVideos = await Video.countDocuments({
+      channel: currentChannel._id,
+      privacySettings: 'public',
+      isDraft: false
+    })
+
     const subscription = await getSubscription({ subscriber: req.channel?.id, channel: currentChannel.id })
 
-    res.render("devtube", { currentChannel, subscription, page: 'channel' })
+    res.render("cognitube", { currentChannel, subscription, page: 'channel', totalVideos })
   } catch (error) {
     console.error("Error fetching ", error)
     throw new Error("Failed to fetch ")
@@ -158,7 +156,8 @@ const subscribeChannel = async (req, res) => {
     if (!channel) return res.status(404).json({ error: "Channel not found" })
 
     // Check if the user is already subscribed
-    if (req.channel.subscriptions.includes(channel.id)) {
+    const existingSub = await getSubscription({ subscriber: req.channel.id, channel: channel.id })
+    if (existingSub) {
       return res.status(400).json({ error: "Already subscribed to this channel" })
     }
 
@@ -168,11 +167,10 @@ const subscribeChannel = async (req, res) => {
       mode: "notification"
     })
 
-    req.channel.subscriptions.push(subscription.id)
-    channel.subscribers.push(req.channel.id)
-
-    await req.channel.save()
-    await channel.save()
+    await Promise.all([
+      Channel.findByIdAndUpdate(req.channel.id, { $addToSet: { subscriptions: subscription._id } }),
+      Channel.findByIdAndUpdate(channel.id, { $addToSet: { subscribers: req.channel.id } })
+    ])
 
     res.status(200).json({ message: "Subscription successful! Welcome to the club 🎉" })
   } catch (error) {
@@ -188,16 +186,16 @@ const unsubscribeChannel = async (req, res) => {
 
     if (!channel) return res.status(404).json({ error: "Channel not found" })
 
-    const subscription = await getSubscription({ subscriber: req.channel.id, channel: channel.id })
+    const subscription = await Subscription.findOne({ subscriber: req.channel.id, channel: channel.id })
 
     if (!subscription) return res.status(404).json({ error: "Not subscribed to this channel" })
 
-    req.channel.subscriptions.pull(subscription._id)
-    channel.subscribers.pull(subscription.subscriber)
-
-    await req.channel.save()
-    await channel.save()
-    await subscription.remove()
+    // Use findOneAndUpdate to pull from arrays, or use the pulled document
+    await Promise.all([
+      Channel.findByIdAndUpdate(req.channel.id, { $pull: { subscriptions: subscription._id } }),
+      Channel.findByIdAndUpdate(channel.id, { $pull: { subscribers: req.channel.id } }),
+      Subscription.findByIdAndDelete(subscription._id)
+    ])
 
     res.status(200).json({ message: "Unsubscribed successfully" })
   } catch (error) {
@@ -228,6 +226,60 @@ const notificationsChannel = async (req, res) => {
   }
 }
 
+// Get videos from all channels the user subscribes to
+const getSubscriptionFeed = async (req, res) => {
+  try {
+    const myChannel = req.channel
+    if (!myChannel) return res.status(403).json({ error: 'Not logged in' })
+
+    // Find the full channel with subscribers list
+    const fullChannel = await Channel.findById(myChannel._id).populate('subscribers')
+
+    // The channels we subscribed TO are the ones in our subscribers list? No - we need subscriptions.
+    // Actually: "subscribers" = people who subscribe to ME
+    // We need the channels that have ME in their subscribers list
+    const subscribedTo = await Channel.find({ subscribers: myChannel._id })
+      .select('_id name uid handle logoURL')
+      .lean()
+
+    if (!subscribedTo.length) {
+      return res.json({ items: [], channels: [], totalItems: 0, next: false })
+    }
+
+    const Video = require('@models/Video')
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const channelIds = subscribedTo.map(c => c._id)
+
+    const query = {
+      channel: { $in: channelIds },
+      privacySettings: 'public',
+      isDraft: false,
+      isShort: false
+    }
+
+    const totalItems = await Video.countDocuments(query)
+    const videos = await Video.find(query)
+      .select('title videoId description isDraft privacySettings uid uploadDate status ikUrl ikFileId length views')
+      .sort({ uploadDate: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean()
+      .populate({ path: 'channel', select: 'name uid logoURL handle' })
+
+    res.json({
+      items: videos,
+      channels: subscribedTo,
+      totalItems,
+      page,
+      next: page * limit < totalItems
+    })
+  } catch (error) {
+    console.error('getSubscriptionFeed error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
 module.exports = {
   updateChannel,
   getSubscription,
@@ -238,5 +290,6 @@ module.exports = {
   getChannelByUid,
   getChannelById,
   subscribeChannel,
-  unsubscribeChannel
+  unsubscribeChannel,
+  getSubscriptionFeed
 }

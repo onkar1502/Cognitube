@@ -1,3 +1,68 @@
+<link rel="stylesheet" href="/css/studio/pages/comments.css">
+
 <div class="main comments">
-  comments
+    <div class="comments-header">
+        <p class="heading">Channel comments</p>
+    </div>
+
+    <div class="comments-body">
+        <div class="comments-list" id="studio-comments-list">
+            <!-- Comments injected via JS -->
+            <div class="loading-placeholder">Loading your community conversations...</div>
+        </div>
+    </div>
 </div>
+
+<script>
+    async function loadStudioComments() {
+        try {
+            const res = await fetch('/studio/comments-api');
+            const data = await res.json();
+
+            const list = document.getElementById('studio-comments-list');
+            list.innerHTML = '';
+
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(comment => {
+                    const item = document.createElement('div');
+                    item.className = 'comment-item';
+                    item.innerHTML = `
+                        <img src="${comment.channel.logoURL}" class="user-logo" alt="user">
+                        <div class="comment-content">
+                            <div class="comment-metadata">
+                                <span class="user-handle">@${comment.channel.handle}</span>
+                                <span class="posted-date">${new Date(comment.postedDate).toLocaleDateString()}</span>
+                                <span class="on-video">on <a href="/watch?v=${comment.video.uid}" class="video-link">${comment.video.title}</a></span>
+                            </div>
+                            <p class="comment-text">${comment.text}</p>
+                            <div class="comment-actions">
+                                <button onclick="deleteComment('${comment._id}')" class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            } else {
+                list.innerHTML = '<div class="no-data">No comments found on your channel.</div>';
+            }
+        } catch (error) {
+            console.error('Failed to load studio comments:', error);
+        }
+    }
+
+    async function deleteComment(id) {
+        if (!confirm('Are you sure you want to delete this comment?')) return;
+        try {
+            const res = await fetch(`/comment/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                loadStudioComments();
+            } else {
+                alert('Failed to delete comment.');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStudioComments);
+</script>

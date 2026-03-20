@@ -1,5 +1,5 @@
 const express = require("express")
-const router = express.Router()
+const router = express.Router({ mergeParams: true })
 
 const comments = require('./comments')
 const analytics = require('./analytics')
@@ -7,8 +7,13 @@ const editing = require('./editing')
 const content = require('./content')
 
 
+const Video = require("@models/Video")
+
 //dashboard 
-router.get('/', async (req, res) => res.render('studio', { page: 'dashboard' }))
+router.get('/', async (req, res) => {
+    const totalVideos = await Video.countDocuments({ channel: req.channel.id })
+    res.render('studio', { page: 'dashboard', totalVideos })
+})
 
 //Forwarded routes
 router.use("/content", content)

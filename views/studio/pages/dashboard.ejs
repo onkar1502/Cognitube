@@ -1,2 +1,35 @@
 <div class="main dashboard">
+    <div class="dashboard-header">
+        <div class="channel-info">
+            <img src="<%= channel.logoURL %>" alt="Channel Logo" class="dashboard-logo">
+            <div class="text">
+                <h1>
+                    <%= channel.name %>
+                </h1>
+                <p>@<%= channel.handle %>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="label">Subscribers</span>
+            <span class="value">
+                <%= channel.subscribers.length %>
+            </span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Total Videos</span>
+            <span class="value">
+                <%= totalVideos %>
+            </span>
+        </div>
+    </div>
+
+    <div class="latest-video">
+        <h2>Channel Overview</h2>
+        <p>Welcome to your CogniTube Studio dashboard. From here you can manage your content and check your channel
+            performance.</p>
+    </div>
 </div>

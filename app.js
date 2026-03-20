@@ -1,3 +1,7 @@
+console.error("DEBUG: Starting app.js");
+// Load environment variables early
+require('dotenv').config()
+
 // Register module alias for cleaner import paths
 require('module-alias/register')
 
@@ -11,6 +15,7 @@ const socketio = require('socket.io')
 
 // Create an Express application
 const app = express()
+app.set('trust proxy', true)
 // Create an HTTP server
 const server = http.createServer(app)
 // Attach Socket.io to the HTTP server
@@ -58,6 +63,9 @@ app.use(checkDBConnection)
 // Middleware to attach user data to res.locals for views
 app.use(async (req, res, next) => {
   res.locals.isCreateChannel = false
+  res.locals.IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY
+  res.locals.IMAGEKIT_URL_ENDPOINT = process.env.IMAGEKIT_URL_ENDPOINT
+  res.locals.HOST_URL = process.env.HOST_URL
   if (req.user) {
     res.locals.channel = req.channel = req.user
   } else {

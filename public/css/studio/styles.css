@@ -8,3 +8,85 @@ main .main-body {
     position: relative;
     height: calc(100% - 64px);
 }
+
+/* Dashboard Styles */
+.dashboard {
+    padding: 32px;
+    color: #fff;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.dashboard-header {
+    margin-bottom: 40px;
+}
+
+.dashboard .channel-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.dashboard-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+
+.dashboard .text h1 {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.dashboard .text p {
+    color: var(--transparent-light-60);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-card .label {
+    font-size: 14px;
+    color: var(--transparent-light-60);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-card .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.latest-video {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.latest-video h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+.latest-video p {
+    color: var(--transparent-light-85);
+    line-height: 1.6;
+}

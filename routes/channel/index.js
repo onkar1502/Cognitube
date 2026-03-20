@@ -23,7 +23,7 @@ router.get(/^\/(UC\w+)?\/shorts$/, async (req, res) => {
 })
 
 //create channel page render
-router.get("/create", isloggedIn, (req, res) => req.channel.uid ? res.redirect("/channel/" + req.channel.uid) : res.render("devtube", {
+router.get("/create", isloggedIn, (req, res) => req.channel.uid ? res.redirect("/channel/" + req.channel.uid) : res.render("cognitube", {
     page: 'home',
     isCreateChannel: true
 }))

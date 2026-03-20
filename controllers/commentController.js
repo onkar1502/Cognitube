@@ -45,12 +45,15 @@ const updateCommentLikesDislikes = async (req, res) => {
             return res.status(400).json({ error: 'Invalid channel ID' })
         }
 
+        const isLiked = comment.likes.map(id => id.toString()).includes(channelId)
+        const isDisliked = comment.dislikes.map(id => id.toString()).includes(channelId)
+
         // Prepare the update
         const update = {
             $pull: { [action === 'like' ? 'dislikes' : 'likes']: channelId },
             ...(action === 'like'
-                ? { [comment.likes.includes(channelId) ? '$pull' : '$addToSet']: { likes: channelId } }
-                : { [comment.dislikes.includes(channelId) ? '$pull' : '$addToSet']: { dislikes: channelId } })
+                ? { [isLiked ? '$pull' : '$addToSet']: { likes: channelId } }
+                : { [isDisliked ? '$pull' : '$addToSet']: { dislikes: channelId } })
         }
 
         const updatedComment = await Comment.findByIdAndUpdate(req.params.id, update, { new: true })
@@ -139,10 +142,48 @@ const getComments = async (req, res) => {
     }
 }
 
+const getAllStudioComments = async (req, res) => {
+    try {
+        const channelId = req.channel.id
+        const page = parseInt(req.query.page) || 1
+        const limit = parseInt(req.query.limit) || 20
+        const skip = (page - 1) * limit
+
+        // Find all videos belonging to this channel
+        const videos = await Video.find({ channel: channelId }).select('_id')
+        const videoIds = videos.map(v => v._id)
+
+        const totalItems = await Comment.countDocuments({ video: { $in: videoIds } })
+        const comments = await Comment.find({ video: { $in: videoIds } })
+            .sort({ postedDate: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: 'channel',
+                select: 'logoURL handle name'
+            })
+            .populate({
+                path: 'video',
+                select: 'title uid videoId'
+            })
+
+        res.json({
+            items: comments,
+            totalItems,
+            page,
+            next: page * limit < totalItems
+        })
+    } catch (error) {
+        console.error('Error fetching studio comments:', error)
+        res.status(500).json({ error: 'Server error' })
+    }
+}
+
 module.exports = {
     createComment,
     updateCommentLikesDislikes,
     replyToComment,
     deleteComment,
-    getComments
+    getComments,
+    getAllStudioComments
 }

@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevTube</title>
+  <title>CogniTube</title>
   <link rel="stylesheet" href="/css/styles.css" />
-  <link rel="stylesheet" href="/css/devtube/styles.css" />
-  <link rel="stylesheet" href="/css/devtube/components/nav.css" />
+  <link rel="stylesheet" href="/css/cognitube/styles.css" />
+  <link rel="stylesheet" href="/css/cognitube/components/nav.css" />
 </head>
 
 <body>
@@ -51,48 +51,48 @@
   <main>
     <div id="__popUpBG"></div>
     <%- include('./components/nav.ejs') %>
-    <div class="main-body scrollable">
-      <% if (page!='player' ) {%>
-      <%- include('./components/sidenav.ejs') %>
-      <% } %>
-      <%- include(`./pages/${page}.ejs`) %>
-    </div>
+      <div class="main-body scrollable">
+        <% if (page!='player' ) {%>
+          <%- include('./components/sidenav.ejs') %>
+            <% } %>
+              <%- include(`./pages/${page}.ejs`) %>
+      </div>
   </main>
 
   <% if (isCreateChannel) {%>
-  <%- include('./components/createChannel.ejs') %>
-  <% } %>
+    <%- include('./components/createChannel.ejs') %>
+      <% } %>
 
-  <script>
-    const popUpBG = document.getElementById('__popUpBG')
-    let signInPopUp
+        <script>
+          const popUpBG = document.getElementById('__popUpBG')
+          let signInPopUp
 
-    function loginRedirect() {
-      if (!!!`<%=channel?.uid%>`) location.href = '/api/google'
-    }
+          function loginRedirect() {
+            if (!!!`<%=channel?.uid%>`) location.href = '/api/google'
+          }
 
-    function showSignInPopUp(element, {
-      title,
-      message
-    }) {
-      const rect = element.getBoundingClientRect()
-      signInPopUp = document.createElement('div')
-      signInPopUp.id = '___loginPopup'
-      signInPopUp.classList.add((innerHeight - rect.bottom) > 180 ? 'bottom' : 'top')
-      if ((innerWidth - rect.right) < 280) signInPopUp.classList.add('left')
-      console.log(innerWidth - rect.right);
-      signInPopUp.innerHTML = `<span class="title">${title || 'Want to access this feature'}</span><span class="message">${message || 'Sign in to access this feature.'}</span><a href="/api/google">Sign in</a>`
-      element.appendChild(signInPopUp)
-      popUpBG.classList.add('show')
-    }
+          function showSignInPopUp(element, {
+            title,
+            message
+          }) {
+            const rect = element.getBoundingClientRect()
+            signInPopUp = document.createElement('div')
+            signInPopUp.id = '___loginPopup'
+            signInPopUp.classList.add((innerHeight - rect.bottom) > 180 ? 'bottom' : 'top')
+            if ((innerWidth - rect.right) < 280) signInPopUp.classList.add('left')
+            console.log(innerWidth - rect.right);
+            signInPopUp.innerHTML = `<span class="title">${title || 'Want to access this feature'}</span><span class="message">${message || 'Sign in to access this feature.'}</span><a href="/api/google">Sign in</a>`
+            element.appendChild(signInPopUp)
+            popUpBG.classList.add('show')
+          }
 
-    function removeSignInPopUp() {
-      popUpBG.classList.remove('show')
-      signInPopUp.remove()
-    }
+          function removeSignInPopUp() {
+            popUpBG.classList.remove('show')
+            signInPopUp.remove()
+          }
 
-    document.getElementById('__popUpBG').addEventListener('click', removeSignInPopUp)
-  </script>
+          document.getElementById('__popUpBG').addEventListener('click', removeSignInPopUp)
+        </script>
 </body>
 
 </html>

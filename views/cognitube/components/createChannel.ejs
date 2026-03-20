@@ -1,7 +1,8 @@
-<link rel="stylesheet" href="/css/devtube/components/createChannel.css" />
+<link rel="stylesheet" href="/css/cognitube/components/createChannel.css" />
 
 <div class="container createChannelContainer">
-  <form action="/channel/create" class="create-channel-form" id="uploadForm" method="post" enctype="multipart/form-data">
+  <form action="/channel/create" class="create-channel-form" id="uploadForm" method="post"
+    enctype="multipart/form-data">
     <div class="header">
       <h1>How you'll appear</h1>
     </div>
@@ -21,7 +22,8 @@
       <label class="text-input">
         <space></space>
         <div class="input">
-          <input type="text" name="name" placeholder="  " value="<%= channel?.name %>" id="name" min="1" max="50" required>
+          <input type="text" name="name" placeholder="  " value="<%= channel?.name %>" id="name" min="1" max="50"
+            required>
           <label for="name">Name</label>
         </div>
       </label>
@@ -35,10 +37,14 @@
           <div class="checker">
             <div class="loader"></div>
             <svg class="error" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z">
+              </path>
             </svg>
             <svg class="success" viewBox="0 0 24 24">
-              <path class="success" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+              <path class="success"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z">
+              </path>
             </svg>
           </div>
         </div>
@@ -46,7 +52,8 @@
       <p class="message">Handle needs 3 or more characters</p>
     </div>
     <div class="disclaimer">
-      <p>By clicking Create Channel you agree to <span>DevTube's Terms of Service</span>. Changes made to your name and profile picture are visible only on DevTube and not other services. <span>Learn more</span></p>
+      <p>By clicking Create Channel you agree to <span>CogniTube's Terms of Service</span>. Changes made to your name
+        and profile picture are visible only on CogniTube and not other services. <span>Learn more</span></p>
     </div>
 
     <div class="footer">
@@ -59,7 +66,7 @@
   const form = document.getElementById("uploadForm")
   const container = document.querySelector(".createChannelContainer")
 
-  document.querySelector('#imageInput').addEventListener("change", function() {
+  document.querySelector('#imageInput').addEventListener("change", function () {
     const file = this.files[0]
     const videoURL = URL.createObjectURL(file)
     document.querySelector('.imagePreview').src = videoURL
@@ -86,13 +93,13 @@
     clearTimeout(timeout)
   }
 
-  handleInput.addEventListener('input', function() {
+  handleInput.addEventListener('input', function () {
     setCheckStatus()
     if (handleInput.value.length > 2) {
       if (!pattern.test(handleInput.value)) return setCheckStatus('inputError', 'Your Handle can only contain letters, numbers, periods (.), dashes (-), and underscores (_)', 'Handle is invalid')
       clearTimeout(timeout)
       isHandleChecked = false
-      timeout = setTimeout(async function() {
+      timeout = setTimeout(async function () {
         setCheckStatus('checking')
         try {
           const response = await fetch(`/api/checkHandle?handle=${handleInput.value}`)

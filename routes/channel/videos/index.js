@@ -24,14 +24,17 @@ router.get('/get-video/:id', checkChannel, isloggedIn, getVideo)
 //check video edit api
 router.get('/can-edit/:id', checkChannel, isloggedIn, canEdit)
 
-//upload video to bunny api
+//upload video to ImageKit api
 router.post('/upload', isloggedIn, asyncHandler(createVideo))
 
-//create video on bunny  api
+//create video on ImageKit  api
 router.post('/create-upload', isloggedIn, asyncHandler(createUpload))
 
-//create video on bunny  api
+//create video on ImageKit  api
 router.post('/create-video', isloggedIn, multer({ storage: storage }).single('thumbnail'), asyncHandler(createVideo))
+
+// update ik info api
+router.post('/update-ik-info', isloggedIn, asyncHandler(require("@controllers/videoController").updateIkInfo))
 
 //delete video 
 router.get('/delete/:videoId', isloggedIn, deleteVideo)

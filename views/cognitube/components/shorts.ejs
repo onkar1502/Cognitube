@@ -117,7 +117,7 @@
 
       clone.querySelector('.short').id = 'id' + short._id;
       clone.querySelector('.preview').href = `/watch?v=${short.uid}`
-      clone.querySelector('.preview img').src = `/api/getThumbnail?videoId=${short.videoId}&thumbnailName=${short.thumbnailFileName.replace(".jpg", "")}`;
+      clone.querySelector('.preview img').src = short.thumbnailFileName || '/images/placeholder.jpg';
       clone.querySelector('.info .title').textContent = short.title;
       clone.querySelector('.info .title').href = `/watch?v=${short.uid}`
       clone.querySelector('.info .views').textContent = `${formatNumber(short.views)} views`

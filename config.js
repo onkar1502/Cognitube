@@ -11,7 +11,8 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID, // Google client ID from environment variable
             clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Google client secret from environment variable
-            callbackURL: "https://devtube-lakm.onrender.com/api/auth/google/callback", // Callback URL after Google authentication
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.HOST_URL}/api/auth/google/callback`,
+            proxy: true, // Required for correctly handling protocol detection on Render
         },
         async (accessToken, refreshToken, profile, cb) => {
             try {

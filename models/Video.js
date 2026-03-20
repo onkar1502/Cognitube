@@ -29,10 +29,16 @@ const videoSchema = new Schema({
     },
     viewsEnabled: { type: Boolean, default: true },
     status: { type: String, trim: true, default: 'Uploading' },
-    channel: { type: Schema.Types.ObjectId, ref: "Channel" }
+    ikFileId: { type: String }, // ImageKit file ID
+    ikUrl: { type: String },   // ImageKit video URL
+    channel: { type: Schema.Types.ObjectId, ref: "Channel" },
+    embedding: { type: [Number] } // 3072-dimensional vector from Gemini
 
 }, { timestamps: true })
 
+
+
+videoSchema.index({ videoId: 1 })
 videoSchema.index({ title: 'text', description: 'text' })
 videoSchema.index({ channel: 1 })
 videoSchema.index({ length: 1 })

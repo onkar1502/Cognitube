@@ -1,3 +1,64 @@
+<link rel="stylesheet" href="/css/studio/pages/analytics.css">
+
 <div class="main analytics">
-  analytics
+    <div class="analytics-header">
+        <p class="heading">Channel analytics</p>
+        <div class="stats-overview">
+            <div class="stat-card">
+                <span class="label">Total Videos</span>
+                <span class="value" id="total-videos">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-body">
+        <div class="top-content">
+            <h3>Recent Content</h3>
+            <p class="subtitle">Your most recently uploaded videos</p>
+            <div class="content-table" id="top-videos-list">
+                <div class="table-header">
+                    <span>Video</span>
+                    <span>Upload Date</span>
+                </div>
+                <!-- Content injected via JS -->
+                 <div class="loading-placeholder">Fetching your content...</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    async function loadAnalytics() {
+        try {
+            const res = await fetch('/studio/analytics');
+            const data = await res.json();
+
+            document.getElementById('total-videos').textContent = data.totalVideos;
+
+            const list = document.getElementById('top-videos-list');
+            // Remove loading placeholder
+            const placeholder = list.querySelector('.loading-placeholder');
+            if (placeholder) placeholder.remove();
+
+            if (data.topVideos && data.topVideos.length > 0) {
+                data.topVideos.forEach(video => {
+                    const row = document.createElement('div');
+                    row.className = 'table-row';
+                    row.innerHTML = `
+                        <div class="video-info">
+                            <a href="/watch?v=${video.uid}" class="video-link">${video.title}</a>
+                        </div>
+                        <div class="video-date">${new Date(video.uploadDate).toLocaleDateString()}</div>
+                    `;
+                    list.appendChild(row);
+                });
+            } else {
+                list.innerHTML += '<div class="no-data">No content data available yet.</div>';
+            }
+        } catch (error) {
+            console.error('Failed to load analytics:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+</script>

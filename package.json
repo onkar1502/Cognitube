@@ -1,7 +1,7 @@
 {
-  "name": "devtube",
+  "name": "cognitube",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-Powered Learning Platform",
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
@@ -18,12 +18,14 @@
     "@root": "/"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "groq-sdk": "^1.1.1",
     "imagekit": "^5.0.1",
     "module-alias": "^2.2.3",
     "mongoose": "^5.9.1",

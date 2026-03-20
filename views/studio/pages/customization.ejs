@@ -16,28 +16,37 @@
     <div class="customization-section scrollable ">
       <div class="input-field">
         <span class="label">Name</span>
-        <span class="detail">Choose a channel name that represents you and your content. Changes made to your name and picture are visible only on YouTube and not other Google services. You can change your name twice in 14 days. </span>
+        <span class="detail">Choose a channel name that represents you and your content. Changes made to your name and
+          picture are visible only on YouTube and not other Google services. You can change your name twice in 14 days.
+        </span>
         <input class="input" value="<%= channel.name %>" name="name" placeholder="Enter channel name" type="text">
       </div>
       <div class="input-field">
         <span class="label">Handle</span>
-        <span class="detail">Choose your unique handle by adding letters and numbers. You can change your handle back within 14 days. Handles can be changed twice every 14 days. </span>
+        <span class="detail">Choose your unique handle by adding letters and numbers. You can change your handle back
+          within 14 days. Handles can be changed twice every 14 days. </span>
         <div class="handle-container">
-          <input class="input handle" name="handle" value="<%= channel.handle %>" placeholder="Set your handle" type="text">
+          <input class="input handle" name="handle" value="<%= channel.handle %>" placeholder="Set your handle"
+            type="text">
           <svg viewBox="0 0 24 24">
-            <path d="M13,13h-2V7h2V13z M13,17h-2v-2h2V17z M22,12c0,5.52-4.48,10-10,10S2,17.52,2,12S6.48,2,12,2S22,6.48,22,12z M21,12 c0-4.96-4.04-9-9-9c-4.96,0-9,4.04-9,9c0,4.96,4.04,9,9,9C16.96,21,21,16.96,21,12z"></path>
+            <path
+              d="M13,13h-2V7h2V13z M13,17h-2v-2h2V17z M22,12c0,5.52-4.48,10-10,10S2,17.52,2,12S6.48,2,12,2S22,6.48,22,12z M21,12 c0-4.96-4.04-9-9-9c-4.96,0-9,4.04-9,9c0,4.96,4.04,9,9,9C16.96,21,21,16.96,21,12z">
+            </path>
           </svg>
         </div>
         <span class="message detail handle">http://localhost:3000/@<%= channel.handle %></span>
       </div>
       <div class="input-field">
         <span class="label">Description</span>
-        <textarea class="input" name="description" value="<%= channel.description %>" placeholder="Tell viewers about your channel. Your description will appear in the About section of your channel and search results, among other places." type="text"></textarea>
+        <textarea class="input" name="description" value="<%= channel.description %>"
+          placeholder="Tell viewers about your channel. Your description will appear in the About section of your channel and search results, among other places."
+          type="text"></textarea>
       </div>
       <div class="input-field">
         <span class="label">Picture</span>
         <div class="detail">
-          Your profile picture will appear where your channel is presented on YouTube, like next to your videos and comments
+          Your profile picture will appear where your channel is presented on YouTube, like next to your videos and
+          comments
         </div>
         <div class="image-input">
           <div class="preview">
@@ -45,7 +54,8 @@
           </div>
           <div class="side-section">
             <div class="detail">
-              It’s recommended to use a picture that’s at least 98 x 98 pixels and 4MB or less. Use a PNG or GIF (no animations) file. Make sure your picture follows the YouTube Community Guidelines.
+              It’s recommended to use a picture that’s at least 98 x 98 pixels and 4MB or less. Use a PNG or GIF (no
+              animations) file. Make sure your picture follows the YouTube Community Guidelines.
             </div>
             <label>
               <input class="input logo" name="logo" type="file" accept="image/*">
@@ -95,13 +105,13 @@
   let timeout = null
 
 
-  handleInput.addEventListener('input', function() {
+  handleInput.addEventListener('input', function () {
     handleErrorStatus()
     if (handleInput.value.length > 2) {
       if (!/^[a-zA-Z0-9._-]+$/.test(handleInput.value)) return handleErrorStatus(true, 'Your Handle can only contain letters, numbers, periods (.), dashes (-), and underscores (_)', 'Handle is invalid')
       clearTimeout(timeout)
       isHandleChecked = false
-      timeout = setTimeout(async function() {
+      timeout = setTimeout(async function () {
         try {
           const response = await fetch(`/api/checkHandle?handle=${handleInput.value}`)
           const data = await response.json()
@@ -152,4 +162,36 @@
     publishContainer.classList.add("active")
     bannerPreview.src = URL.createObjectURL(bannerInput.files[0])
   })
+
+  // Intercept form submit and use fetch instead of default HTML submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+
+    const btn = form.querySelector('button[type="submit"]')
+    btn.textContent = 'Saving...'
+    btn.disabled = true
+
+    try {
+      const formData = new FormData(form)
+      const response = await fetch('/channel/edit', {
+        method: 'POST',
+        body: formData
+      })
+      const data = await response.json()
+      if (response.ok) {
+        btn.textContent = '✅ Saved!'
+        publishContainer.classList.remove('active')
+        setTimeout(() => { btn.textContent = 'Publish'; btn.disabled = false }, 2000)
+      } else {
+        alert('Error: ' + (data.error || 'Failed to save'))
+        btn.textContent = 'Publish'
+        btn.disabled = false
+      }
+    } catch (err) {
+      alert('Error saving: ' + err.message)
+      btn.textContent = 'Publish'
+      btn.disabled = false
+    }
+  })
+
 </script>

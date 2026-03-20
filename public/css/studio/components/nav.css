@@ -247,6 +247,26 @@ sidenav {
     align-items: center;
     justify-content: space-between;
     font-weight: 600;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Studio Sidenav */
+sidenav::-webkit-scrollbar {
+    width: 6px;
+}
+
+sidenav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+sidenav::-webkit-scrollbar-thumb {
+    background: var(--transparent-light-20);
+    border-radius: 10px;
+}
+
+sidenav::-webkit-scrollbar-thumb:hover {
+    background: var(--transparent-light-30);
 }
 
 sidenav .main,
@@ -295,7 +315,7 @@ sidenav .main .channel-info .img:hover a {
 
 
 sidenav .main .channel-info .img a::after {
-    content: 'View channel on DevTube';
+    content: 'View channel on CogniTube';
     font-size: 10px;
     width: 120px;
     background-color: var(--secondary-light);

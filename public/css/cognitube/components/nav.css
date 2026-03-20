@@ -222,6 +222,26 @@ nav .right .menu .menu-section .btn svg {
     width: 200px;
     height: 100%;
     transition: all 0.3s ease-in-out;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Sidenav */
+.sidenav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidenav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidenav::-webkit-scrollbar-thumb {
+    background: var(--transparent-light-20);
+    border-radius: 10px;
+}
+
+.sidenav::-webkit-scrollbar-thumb:hover {
+    background: var(--transparent-light-30);
 }
 
 .cover {

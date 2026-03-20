@@ -1,7 +1,8 @@
 const express = require("express")
-const router = express.Router()
+const router = express.Router({ mergeParams: true })
 
 
+const { asyncHandler } = require("@lib/middlewares")
 const { getVideos } = require("@controllers/videoController")
 
 const videos = require('./videos')
@@ -10,7 +11,7 @@ const live = require('./live')
 const playlists = require('./playlists')
 
 
-router.get('/*', async (req, res) => {
+router.get('/*', asyncHandler(async (req, res) => {
 
     const criteria = {
         channel: req.channel._id,
@@ -23,7 +24,7 @@ router.get('/*', async (req, res) => {
     res.render('studio', {
         page: 'content', videos
     })
-})
+}))
 
 // router.use("/videos", videos)
 // router.use("/shorts", shorts)

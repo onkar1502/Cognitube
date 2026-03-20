@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevTube</title>
+  <title>CogniTube</title>
   <link rel="stylesheet" href="/css/styles.css" />
-  <link rel="stylesheet" href="/css/devtube/styles.css" />
-  <link rel="stylesheet" href="/css/devtube/components/nav.css" />
+  <link rel="stylesheet" href="/css/cognitube/styles.css" />
+  <link rel="stylesheet" href="/css/cognitube/components/nav.css" />
   <style>
     .main-body {
       display: flex;
@@ -48,6 +48,7 @@
     .main-body a:hover {
       background-color: var(--transparent-accent-15);
     }
+
     .main-body a:active {
       background-color: var(--transparent-accent-20);
     }
@@ -56,12 +57,15 @@
 
 <body>
   <main>
-    <%- include('./devtube/components/nav.ejs') %>
-    <div class="main-body">
-      <img class="image" src="https://ik.imagekit.io/technoaayush/Const/unavailable_video_dark_theme_DOOC2xvohR.png" alt="">
-      <span class="message"><%= message %></span>
-      <a href="/">GO TO HOME</a>
-    </div>
+    <%- include('./cognitube/components/nav.ejs') %>
+      <div class="main-body">
+        <img class="image" src="https://ik.imagekit.io/technoaayush/Const/unavailable_video_dark_theme_DOOC2xvohR.png"
+          alt="">
+        <span class="message">
+          <%= message %>
+        </span>
+        <a href="/">GO TO HOME</a>
+      </div>
   </main>
 </body>
 

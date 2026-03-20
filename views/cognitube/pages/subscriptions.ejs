@@ -1,0 +1,154 @@
+<link rel="stylesheet" href="/css/cognitube/pages/subscriptions.css" />
+
+<div class="subscriptions-main">
+
+    <!-- Subscribed Channels Bar -->
+    <div class="channels-bar" id="channelsBar">
+        <div class="channels-bar-title">Subscribed Channels</div>
+        <div class="channels-list" id="channelsList">
+            <div class="channel-chip skeleton"></div>
+            <div class="channel-chip skeleton"></div>
+            <div class="channel-chip skeleton"></div>
+            <div class="channel-chip skeleton"></div>
+        </div>
+    </div>
+
+    <!-- Videos Feed -->
+    <div class="subs-content">
+        <h2 class="subs-heading">Latest from your subscriptions</h2>
+        <div class="subs-videos" id="subsVideos">
+            <!-- populated by JS -->
+        </div>
+        <div class="subs-empty hidden" id="subsEmpty">
+            <div class="empty-icon">📺</div>
+            <h3>No videos yet</h3>
+            <p>Subscribe to channels to see their latest videos here.</p>
+        </div>
+        <div class="subs-loading" id="subsLoading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let page = 1
+    let isNext = true
+    let isFetching = false
+
+    async function loadFeed() {
+        if (!isNext || isFetching) return
+        isFetching = true
+        document.getElementById('subsLoading').classList.remove('hidden')
+
+        try {
+            const res = await fetch(`/api/subscriptions?page=${page}`)
+            if (!res.ok) {
+                if (res.status === 403) {
+                    document.getElementById('subsEmpty').innerHTML = `
+            <div class="empty-icon">🔐</div>
+            <h3>Sign in to see subscriptions</h3>
+            <p>You need to be logged in to view your subscription feed.</p>
+          `
+                    document.getElementById('subsEmpty').classList.remove('hidden')
+                    return
+                }
+                throw new Error('Failed to fetch')
+            }
+
+            const data = await res.json()
+
+            // Render channel chips
+            if (page === 1) {
+                const list = document.getElementById('channelsList')
+                list.innerHTML = ''
+                if (data.channels && data.channels.length > 0) {
+                    data.channels.forEach(ch => {
+                        const chip = document.createElement('a')
+                        chip.href = `/channel/${ch.uid}`
+                        chip.className = 'channel-chip'
+                        chip.innerHTML = `
+              <img src="${ch.logoURL || '/images/placeholder.jpg'}" alt="${ch.name}" />
+              <span>${ch.name}</span>
+            `
+                        list.appendChild(chip)
+                    })
+                } else {
+                    list.innerHTML = '<span class="no-channels">No subscriptions yet</span>'
+                }
+            }
+
+            // Render videos
+            if (data.items && data.items.length > 0) {
+                const grid = document.getElementById('subsVideos')
+                data.items.forEach(video => {
+                    const card = document.createElement('div')
+                    card.className = 'subs-video-card'
+                    const thumb = video.ikUrl || '/images/placeholder.jpg'
+                    const channelName = video.channel ? video.channel.name : 'Unknown'
+                    const channelUid = video.channel ? video.channel.uid : ''
+                    const channelLogo = video.channel ? video.channel.logoURL : '/images/placeholder.jpg'
+                    const timestamp = video.uploadDate ? timeAgo(new Date(video.uploadDate)) : ''
+                    const views = formatNum(video.views || 0)
+
+                    card.innerHTML = `
+            <a href="/watch?v=${video.uid}" class="thumb-link">
+              <img src="${thumb}" alt="${video.title}" class="subs-thumb" loading="lazy" />
+            </a>
+            <div class="subs-card-info">
+              <a href="/channel/${channelUid}" class="subs-channel-logo">
+                <img src="${channelLogo}" alt="${channelName}" />
+              </a>
+              <div class="subs-card-details">
+                <a href="/watch?v=${video.uid}" class="subs-title">${video.title}</a>
+                <a href="/channel/${channelUid}" class="subs-channel-name">${channelName}</a>
+                <span class="subs-meta">${views} views • ${timestamp}</span>
+              </div>
+            </div>
+          `
+                    grid.appendChild(card)
+                })
+                isNext = data.next
+                page++
+            } else if (page === 1) {
+                document.getElementById('subsEmpty').classList.remove('hidden')
+            }
+        } catch (err) {
+            console.error('Subscription feed error:', err)
+        } finally {
+            isFetching = false
+            document.getElementById('subsLoading').classList.add('hidden')
+        }
+    }
+
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000)
+        if (seconds < 60) return 'Just now'
+        const intervals = [
+            [Math.floor(seconds / 31536000), 'year'],
+            [Math.floor(seconds / 2592000), 'month'],
+            [Math.floor(seconds / 86400), 'day'],
+            [Math.floor(seconds / 3600), 'hour'],
+            [Math.floor(seconds / 60), 'minute'],
+        ]
+        for (const [val, unit] of intervals) {
+            if (val >= 1) return `${val} ${unit}${val > 1 ? 's' : ''} ago`
+        }
+        return 'Just now'
+    }
+
+    function formatNum(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+        if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
+        return n.toString()
+    }
+
+    // Infinite scroll
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+            loadFeed()
+        }
+    })
+
+    loadFeed()
+</script>

@@ -1,0 +1,127 @@
+<link rel="stylesheet" href="/css/cognitube/pages/shorts.css" />
+<div class="shorts-main">
+
+  <div class="shorts">
+
+  </div>
+
+</div>
+
+<template class="short-template">
+  <div class="short">
+    <img class="short-view" src="" alt="">
+  </div>
+</template>
+
+<script>
+  const shorts = document.querySelector('.shorts');
+
+  let shortNo = 1
+  let totalShorts
+  let isChanging = false;
+  let isNext = true
+
+  let shortsData = []
+
+  document.addEventListener('wheel', async (e) => {
+    if (!isChanging && shortNo >= 1 && !(shortNo == 1 && e.deltaY < 0) && !(totalShorts == shortNo && e.deltaY > 0)) {
+      isChanging = true;
+
+      const currentShort = shortNo
+
+      shortNo = e.deltaY > 0 ? shortNo + 1 : shortNo - 1;
+
+      shorts.style.transform = e.deltaY > 0 ? `translateY(calc(${-currentShort * 100}vh + ${(128 - 24) * currentShort}px))` : `translateY(calc(${-(currentShort - 2) * 100}vh + ${(128 - 24) * (currentShort - 2)}px))`;
+
+      startShort(e.deltaY)
+
+      if (shortsData.length === shortNo && isNext) {
+        await fetchShorts()
+        setTimeout(() => isChanging = false, 1000);
+      } else setTimeout(() => isChanging = false, 1000);
+
+    }
+  });
+
+  // FIX 1: Call fetchShorts(true) first to load the current/featured short
+  async function init() {
+    await fetchShorts(true)
+    await fetchShorts(false)
+  }
+
+  init()
+
+  function getThumbnailSrc(short) {
+    if (!short) return '/images/placeholder.jpg'
+    return short.thumbnailFileName || '/images/placeholder.jpg'
+  }
+
+  async function startShort(dir) {
+
+    const short = document.querySelector(`.shorts #short${shortNo} .short-view`)
+    const shortBack = document.querySelector(`.shorts #short${shortNo - 1} .short-view`)
+    const shortFront = document.querySelector(`.shorts #short${shortNo + 1} .short-view`)
+
+    if (short && shortsData[shortNo - 1]) {
+      const videoData = shortsData[shortNo - 1]
+      const videoSrc = videoData.ikUrl
+      if (videoSrc) {
+        short.outerHTML = `<video class='short-view' src="${videoSrc}" autoplay loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+      } else {
+        short.outerHTML = `<div class="short-view" style="display:flex;align-items:center;justify-content:center;color:white;">Video unavailable</div>`
+      }
+    }
+
+    var currentShort
+
+    if (typeof dir == 'number') {
+      currentShort = shortsData[shortNo - 1]
+      // FIX 2: Use helper & safe index
+      const prevData = dir < 0 ? shortsData[shortNo] : shortsData[shortNo - 2]
+      const thumbnailSrc = getThumbnailSrc(prevData)
+      const targetEl = dir < 0 ? shortFront : shortBack
+      if (targetEl) setTimeout(() => targetEl.outerHTML = `<img class='short-view' src="${thumbnailSrc}" alt="">`, 900)
+    } else {
+      currentShort = dir
+    }
+
+    if (currentShort) {
+      let segments = (new URL(window.location.href)).pathname.split('/');
+      segments[2] = currentShort.uid;
+      history.replaceState(null, '', segments.join('/'));
+    }
+
+  }
+
+  async function fetchShorts(isFirst) {
+    if (isNext)
+      try {
+        const response = await fetch(`/api/shorts?${isFirst ? 'uid=' : 'notUid='}<%= uid%>&page=${shortsData.length + 1}`);
+        const short = await response.json();
+        if (short.items && short.items.length > 0) {
+          shortsData.push(short.items[0])
+          isNext = short.next;
+          if (!isFirst && !totalShorts) totalShorts = short.totalItems
+          createShort(short.items[0])
+        } else {
+          isNext = false;
+          if (isFirst) {
+            shorts.innerHTML = '<div class="no-shorts" style="color: white; padding: 20px; text-align: center;">No shorts found. Upload one using the UPLOAD SHORT button!</div>';
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching shorts:', error);
+      }
+  }
+
+  async function createShort(short) {
+    const template = document.querySelector('.short-template');
+    const clone = document.importNode(template, true).content;
+    clone.querySelector('.short').id = 'short' + shortsData.length
+    // FIX 3: Use the helper function for thumbnails
+    clone.querySelector('.short img').src = getThumbnailSrc(short)
+    shorts.appendChild(clone)
+    if (shortsData.length === 1) startShort(short)
+  }
+
+</script>

@@ -146,7 +146,7 @@
 
       clone.querySelector('.video').id = 'id' + video._id;
       clone.querySelector('.preview').href = `/watch?v=${video.uid}`
-      clone.querySelector('.preview img').src = `/api/getThumbnail?videoId=${video.videoId}&thumbnailName=${video.thumbnailFileName.replace(".jpg", "")}`;
+      clone.querySelector('.preview img').src = video.thumbnailFileName || '/images/placeholder.jpg';
       clone.querySelector('.info img').src = video.channel.logoURL;
       clone.querySelector('.info .logo').href = `/channel/${video.channel.uid}`
       clone.querySelector('.details .title').textContent = video.title;
